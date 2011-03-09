@@ -228,9 +228,10 @@ cmd_start() {
 }
 
 cmd_finish() {
-	DEFINE_boolean fetch false "fetch from $ORIGIN before performing finish" F
+	DEFINE_boolean fetch true "fetch from $ORIGIN before performing finish" F
 	DEFINE_boolean rebase false "rebase instead of merge" r
 	DEFINE_boolean keep false "keep branch after performing finish" k
+	DEFINE_boolean upload true "upload to the remote repository after performing finish" u
 	parse_args "$@"
 	expand_nameprefix_arg
 
@@ -348,6 +349,10 @@ helper_finish_cleanup() {
 		git branch -d "$BRANCH"
 	fi
 
+    # upload to remote repo
+    if flag upload; then
+        git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+
 	echo
 	echo "Summary of actions:"
 	echo "- The feature branch '$BRANCH' was merged into '$DEVELOP_BRANCH'"
@@ -357,6 +362,11 @@ helper_finish_cleanup() {
 	else
 		echo "- Feature branch '$BRANCH' has been removed"
 	fi
+    if flag upload; then
+        echo "- Changes to master have been uploaded to remote repository."
+    else
+        echo "- All changes were perfomed locally. Remember to upload to the remote repository manually."
+    fi
 	echo "- You are now on branch '$DEVELOP_BRANCH'"
 	echo
 }
