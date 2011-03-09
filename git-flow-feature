@@ -352,6 +352,7 @@ helper_finish_cleanup() {
     # upload to remote repo
     if flag upload; then
         git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+    fi
 
 	echo
 	echo "Summary of actions:"
