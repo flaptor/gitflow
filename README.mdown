@@ -19,20 +19,20 @@ Usage:
 
 To work on a new feature:
 
-- git flow feature start <feature name>
+- git flow feature start \<feature name\>
 
-- <Do your work, commiting as necessary as many times as you need>
+- \<Do your work, commiting as necessary as many times as you need\>
 
-- git flow feature finish <feature name>
+- git flow feature finish \<feature name\>
 
 
 To make a quick change to production:
 
-- git flow hotfix start <hotfix name>
+- git flow hotfix start \<hotfix name\>
 
-- <Do your work>
+- \<Do your work\>
 
-- git flow hotfix finish <hotfix name>
+- git flow hotfix finish \<hotfix name\>
 
 
 Installing git-flow
