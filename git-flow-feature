@@ -192,7 +192,7 @@ parse_remote_name() {
 }
 
 cmd_start() {
-	DEFINE_boolean fetch false 'fetch from origin before performing local operation' F
+	DEFINE_boolean fetch true 'fetch from origin before performing local operation' F
 	parse_args "$@"
 	BASE=${2:-$DEVELOP_BRANCH}
 	require_name_arg
@@ -218,6 +218,11 @@ cmd_start() {
 
 	echo
 	echo "Summary of actions:"
+    if flag fetch; then
+        echo "- Updates were fetched form remote repo before starting"
+    else
+        echo "- Updates were NOT fetched from remote repo. Your may have merge problems afterwards"
+    fi
 	echo "- A new branch '$BRANCH' was created, based on '$BASE'"
 	echo "- You are now on branch '$BRANCH'"
 	echo ""
@@ -352,6 +357,7 @@ helper_finish_cleanup() {
     # upload to remote repo
     if flag upload; then
         git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+        echo git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
     fi
 
 	echo
