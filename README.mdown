@@ -8,19 +8,30 @@ blog post").
 Getting started
 ---------------
 Setting up:
+
 - Clone flaptor/indextank in a clean repo. The only remote has to be named "origin" and point to flaptor/indextank, or bad thing will happen :(
 - Checkout as origin/master as master and origin/production as production.
+
 - Run "git flow init", and accept all defaults.
 
+
 Usage:
+
 To work on a new feature:
+
 - git flow feature start <feature name>
+
 - <Do your work, commiting as necessary as many times as you need>
+
 - git flow feature finish <feature name>
 
+
 To make a quick change to production:
+
 - git flow hotfix start <hotfix name>
+
 - <Do your work>
+
 - git flow hotfix finish <hotfix name>
 
 
