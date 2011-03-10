@@ -7,15 +7,21 @@ blog post").
 
 Getting started
 ---------------
-For the best introduction to get started with `git flow`, please read Jeff
-Kreeftmeijer's blog post:
+Setting up:
+- Clone flaptor/indextank in a clean repo. The only remote has to be named "origin" and point to flaptor/indextank, or bad thing will happen :(
+- Checkout as origin/master as master and origin/production as production.
+- Run "git flow init", and accept all defaults.
 
-[http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
+Usage:
+To work on a new feature:
+- git flow feature start <feature name>
+- <Do your work, commiting as necessary as many times as you need>
+- git flow feature finish <feature name>
 
-Or have a look at one of these screen casts:
-
-* [A short introduction to git-flow](http://vimeo.com/16018419) (by Mark Derricutt)
-* [On the path with git-flow](http://codesherpas.com/screencasts/on_the_path_gitflow.mov) (by Dave Bock)
+To make a quick change to production:
+- git flow hotfix start <hotfix name>
+- <Do your work>
+- git flow hotfix finish <hotfix name>
 
 
 Installing git-flow
