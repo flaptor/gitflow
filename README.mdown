@@ -4,42 +4,14 @@ A collection of Git extensions to provide high-level repository operations
 for Vincent Driessen's [branching model](http://nvie.com/git-model "original
 blog post").
 
-
-Getting started
----------------
-Setting up:
-
-- Clone flaptor/indextank in a clean repo. The only remote has to be named "origin" and point to flaptor/indextank, or bad thing will happen :(
-- Checkout as origin/master as master and origin/production as production.
-
-- Run "git flow init", and accept all defaults.
-
-
-Usage:
-
-To work on a new feature:
-
-- git flow feature start \<feature name\>
-
-- \<Do your work, commiting as necessary as many times as you need\>
-
-- git flow feature finish \<feature name\>
-
-
-To make a quick change to production:
-
-- git flow hotfix start \<hotfix name\>
-
-- \<Do your work\>
-
-- git flow hotfix finish \<hotfix name\>
-
-
-Installing git-flow
+Installing flaptor's git-flow
 -------------------
+### The bare minimum:
+GitFlow as most git extensions works just by having the right-named executables in your command path. So just copying the git-flow-* scripts in the top-level directory into your path should work.
+
 
 ### Linux, etc. (including Mac OS)
-Another easy way to install git-flow is using Rick Osborne's excellent git-flow
+An easy way to install git-flow is using Rick Osborne's excellent git-flow
 installer, which can be run using the following command:
 
 	$ wget --no-check-certificate -q -O - https://github.com/flaptor/gitflow/raw/develop/contrib/gitflow-installer.sh | sudo sh
@@ -79,6 +51,37 @@ git-flow subcommands and branch names.
 
 For Windows users, [msysgit](http://code.google.com/p/msysgit/) is a good
 starting place for installing git.
+
+
+Getting started for use with IndexTank's repo:
+---------------
+Setting up:
+
+- Clone flaptor/indextank in a clean repo. The only remote has to be named "origin" and point to flaptor/indextank, or bad thing will happen :(
+- Checkout as origin/master as master and origin/production as production.
+
+- Run "git flow init", and accept all defaults.
+
+
+Usage:
+
+To work on a new feature:
+
+- git flow feature start \<feature name\>
+
+- \<Do your work, commiting as necessary as many times as you need\>
+
+- git flow feature finish \<feature name\>
+
+
+To make a quick change to production:
+
+- git flow hotfix start \<hotfix name\>
+
+- \<Do your work\>
+
+- git flow hotfix finish \<hotfix name\>
+
 
 
 FAQ
