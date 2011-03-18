@@ -207,6 +207,7 @@ cmd_start() {
         git checkout "DEVELOP_BRANCH"
         git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" || die "could not ff $DEVELOP_BRANCH"
 	fi
+    require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
 	# create branch
 	if ! git checkout -b "$BRANCH" "$BASE"; then
@@ -284,18 +285,16 @@ cmd_finish() {
 	require_clean_working_tree
 
 	# update local repo with remote changes first, if asked
-	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then
-		if flag fetch; then
-			git fetch -q "$ORIGIN" "$BRANCH"
-		fi
-	fi
+    if flag fetch; then
+        git fetch -q "$ORIGIN"
+        git checkout "$DEVELOP_BRANCH"
+        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+    fi
 
 	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then
 		require_branches_equal "$BRANCH" "$ORIGIN/$BRANCH"
 	fi
-	if has "$ORIGIN/$DEVELOP_BRANCH" "$(git_remote_branches)"; then
-		require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
-	fi
+    require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
 	# if the user wants to rebase, do that first
 	if flag rebase; then
