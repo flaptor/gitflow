@@ -204,7 +204,7 @@ cmd_start() {
 	# update the local repo with remote changes, if asked
 	if flag fetch; then
 		git fetch -q "$ORIGIN"
-        git checkout "DEVELOP_BRANCH"
+        git checkout "$DEVELOP_BRANCH"
         git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" || die "could not ff $DEVELOP_BRANCH"
 	fi
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
