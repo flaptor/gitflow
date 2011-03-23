@@ -239,7 +239,7 @@ cmd_finish() {
 		# try to tag the release
 		# in case a previous attempt to finish this release branch has failed,
 		# but the tag was set successful, we skip it now
-		local tagname=RELEASES-`date -u "+%Y%h%d-%k%M"`
+		local tagname=RELEASES-`date -u "+%Y%h%d-%H%M"`
 		if ! git_tag_exists "$tagname"; then
 			local opts="-a"
 			flag sign && opts="$opts -s"
