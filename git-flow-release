@@ -171,6 +171,9 @@ cmd_start() {
 	# create branch
 	git checkout -b "$BRANCH" "$BASE"
 
+    git submodule init
+    git submodule update
+
 	echo
 	echo "Summary of actions:"
     if flag fetch; then
@@ -180,6 +183,7 @@ cmd_start() {
         echo "- Changes were fetched from the remote repo"
     fi
 	echo "- A new branch '$BRANCH' was created, based on '$BASE'"
+	echo "- Submodules were inited and updated."
 	echo "- You are now on branch '$BRANCH'"
 	echo
 	echo "Follow-up actions:"

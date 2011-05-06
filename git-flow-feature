@@ -214,6 +214,9 @@ cmd_start() {
 		die "Could not create feature branch '$BRANCH'"
 	fi
 
+    git submodule init
+    git submodule update
+
 	echo
 	echo "Summary of actions:"
     if flag fetch; then
@@ -222,6 +225,7 @@ cmd_start() {
         echo "- Updates were NOT fetched from remote repo. Your may have merge problems afterwards"
     fi
 	echo "- A new branch '$BRANCH' was created, based on '$BASE'"
+	echo "- Submodules were inited and updated"
 	echo "- You are now on branch '$BRANCH'"
 	echo ""
 	echo "Now, start committing on your feature. When done, use:"
