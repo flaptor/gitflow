@@ -192,33 +192,40 @@ parse_remote_name() {
 }
 
 cmd_start() {
-	DEFINE_boolean fetch false 'fetch from origin before performing local operation' F
+	DEFINE_boolean fetch true 'fetch from origin before performing local operation' F
 	parse_args "$@"
 	BASE=${2:-$DEVELOP_BRANCH}
 	require_name_arg
+	require_clean_working_tree
 
 	# sanity checks
 	require_branch_absent "$BRANCH"
 
 	# update the local repo with remote changes, if asked
 	if flag fetch; then
-		git fetch -q "$ORIGIN" "$DEVELOP_BRANCH"
+		git fetch -q "$ORIGIN"
+        git checkout "$DEVELOP_BRANCH"
+        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" || die "could not ff $DEVELOP_BRANCH"
 	fi
-
-	# if the origin branch counterpart exists, assert that the local branch
-	# isn't behind it (to avoid unnecessary rebasing)
-	if git_branch_exists "$ORIGIN/$DEVELOP_BRANCH"; then
-		require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
-	fi
+    require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
 	# create branch
 	if ! git checkout -b "$BRANCH" "$BASE"; then
 		die "Could not create feature branch '$BRANCH'"
 	fi
 
+    git submodule init
+    git submodule update
+
 	echo
 	echo "Summary of actions:"
+    if flag fetch; then
+        echo "- Updates were fetched form remote repo before starting"
+    else
+        echo "- Updates were NOT fetched from remote repo. Your may have merge problems afterwards"
+    fi
 	echo "- A new branch '$BRANCH' was created, based on '$BASE'"
+	echo "- Submodules were inited and updated"
 	echo "- You are now on branch '$BRANCH'"
 	echo ""
 	echo "Now, start committing on your feature. When done, use:"
@@ -228,9 +235,10 @@ cmd_start() {
 }
 
 cmd_finish() {
-	DEFINE_boolean fetch false "fetch from $ORIGIN before performing finish" F
+	DEFINE_boolean fetch true "fetch from $ORIGIN before performing finish" F
 	DEFINE_boolean rebase false "rebase instead of merge" r
 	DEFINE_boolean keep false "keep branch after performing finish" k
+	DEFINE_boolean upload true "upload to the remote repository after performing finish" u
 	parse_args "$@"
 	expand_nameprefix_arg
 
@@ -281,18 +289,16 @@ cmd_finish() {
 	require_clean_working_tree
 
 	# update local repo with remote changes first, if asked
-	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then
-		if flag fetch; then
-			git fetch -q "$ORIGIN" "$BRANCH"
-		fi
-	fi
+    if flag fetch; then
+        git fetch -q "$ORIGIN"
+        git checkout "$DEVELOP_BRANCH"
+        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+    fi
 
 	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then
 		require_branches_equal "$BRANCH" "$ORIGIN/$BRANCH"
 	fi
-	if has "$ORIGIN/$DEVELOP_BRANCH" "$(git_remote_branches)"; then
-		require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
-	fi
+    require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
 	# if the user wants to rebase, do that first
 	if flag rebase; then
@@ -348,6 +354,12 @@ helper_finish_cleanup() {
 		git branch -d "$BRANCH"
 	fi
 
+    # upload to remote repo
+    if flag upload; then
+        git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+        echo git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+    fi
+
 	echo
 	echo "Summary of actions:"
 	echo "- The feature branch '$BRANCH' was merged into '$DEVELOP_BRANCH'"
@@ -357,6 +369,11 @@ helper_finish_cleanup() {
 	else
 		echo "- Feature branch '$BRANCH' has been removed"
 	fi
+    if flag upload; then
+        echo "- Changes to master have been uploaded to remote repository."
+    else
+        echo "- All changes were perfomed locally. Remember to upload to the remote repository manually."
+    fi
 	echo "- You are now on branch '$DEVELOP_BRANCH'"
 	echo
 }

@@ -4,77 +4,22 @@ A collection of Git extensions to provide high-level repository operations
 for Vincent Driessen's [branching model](http://nvie.com/git-model "original
 blog post").
 
-
-Getting started
----------------
-For the best introduction to get started with `git flow`, please read Jeff
-Kreeftmeijer's blog post:
-
-[http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
-
-Or have a look at one of these screen casts:
-
-* [A short introduction to git-flow](http://vimeo.com/16018419) (by Mark Derricutt)
-* [On the path with git-flow](http://codesherpas.com/screencasts/on_the_path_gitflow.mov) (by Dave Bock)
-
-
-Installing git-flow
+Installing flaptor's git-flow
 -------------------
+### The bare minimum:
+GitFlow as most git extensions works just by having the right-named executables in your command path. So just copying the git-flow-* scripts in the top-level directory into your path should work.
 
-### Mac OS
-If you're on a Mac and use [homebrew](http://github.com/mxcl/homebrew), it's simple:
 
-    $ brew install git-flow
-
-If you're on a Mac and use [MacPorts](http://macports.org/), it's simple:
-
-    $ port install git-flow
-
-### Linux, etc.
-Another easy way to install git-flow is using Rick Osborne's excellent git-flow
+### Linux, etc. (including Mac OS)
+An easy way to install git-flow is using Rick Osborne's excellent git-flow
 installer, which can be run using the following command:
 
-	$ wget --no-check-certificate -q -O - https://github.com/nvie/gitflow/raw/develop/contrib/gitflow-installer.sh | sudo sh
-
-### Windows
-#### Using Cygwin
-For Windows users who wish to use the automated install, it is suggested that you install [Cygwin](http://www.cygwin.com/)
-first to install tools like `git`, `util-linux` and `wget` (with those three being packages that can be selected
-during installation). Then simply run this command from a Cygwin shell:
-
-	$ wget -q -O - https://github.com/nvie/gitflow/raw/develop/contrib/gitflow-installer.sh | sh
-
-#### Using msysgit
-This is much like the manual installation below, but there are additional steps required to install some extra tools that
-are not distributed with [msysgit](http://code.google.com/p/msysgit/).
-
-Clone the git-flow sources from Github:
-
-	$ git clone --recursive git://github.com/nvie/gitflow.git
-
-Copy git-flow's relevant files to your msysgit installation directory:
-
-	$ mkdir /usr/local/bin
-	$ cp git-flow* gitflow* /usr/local/bin/
-	$ cp shFlags/src/shflags /usr/local/bin/gitflow-shFlags
-
-Next up we need to borrow a couple of binaries from [Cygwin](http://www.cygwin.com/). If you don't have Cygwin installed, please 
-install it including the `util-linux` package. Apart from `util-linux`'s dependencies, no other packages are required. When you
-finished installation, copy the following files using msysgit's _Git Bash_. We assume the Cygwin's default installation path in C:\cygwin.
-
-	$ cd /c/cygwin/
-	$ cp bin/getopt.exe /usr/local/bin/
-	$ cp bin/cyggcc_s-1.dll /usr/local/bin/
-	$ cp bin/cygiconv-2.dll /usr/local/bin/
-	$ cp bin/cygintl-8.dll /usr/local/bin/
-	$ cp bin/cygwin1.dll /usr/local/bin/
-
-After copying the files above, you can safely uninstall your Cygwin installation by deleting the C:\cygwin directory.
+	$ wget --no-check-certificate -q -O - https://github.com/flaptor/gitflow/raw/develop/contrib/gitflow-installer.sh | sudo sh
 
 ### Manual installation
 If you prefer a manual installation, please use the following instructions:
 
-	$ git clone --recursive git://github.com/nvie/gitflow.git
+	$ git clone --recursive git://github.com/flaptor/gitflow.git
 
 Then, you can install `git-flow`, using:
 
@@ -106,6 +51,37 @@ git-flow subcommands and branch names.
 
 For Windows users, [msysgit](http://code.google.com/p/msysgit/) is a good
 starting place for installing git.
+
+
+Getting started for use with IndexTank's repo:
+---------------
+Setting up:
+
+- Clone flaptor/indextank in a clean repo. The only remote has to be named "origin" and point to flaptor/indextank, or bad thing will happen :(
+- Checkout as origin/master as master and origin/production as production.
+
+- Run "git flow init", and accept all defaults.
+
+
+Usage:
+
+To work on a new feature:
+
+- git flow feature start \<feature name\>
+
+- \<Do your work, commiting as necessary as many times as you need\>
+
+- git flow feature finish \<feature name\>
+
+
+To make a quick change to production:
+
+- git flow hotfix start \<hotfix name\>
+
+- \<Do your work\>
+
+- git flow hotfix finish \<hotfix name\>
+
 
 
 FAQ
