@@ -42,7 +42,7 @@
 
 # shell output
 warn() { echo "$@" >&2; }
-die() { warn "$@"; warn "For more details check $LOGFILE"; exit 1; }
+die() { warn "$@"; warn "For more details run git flow log"; exit 1; }
 
 escape() {
 	echo "$1" | sed 's/\([\.\+\$\*]\)/\\\1/g'
@@ -69,6 +69,21 @@ noflag() { local FLAG; eval FLAG='$FLAGS_'$1; [ $FLAG -ne $FLAGS_TRUE ]; }
 #
 # Git specific common functionality
 #
+
+flow_do() {
+	local message="$1"
+	local error_msg="$2"
+	shift 2
+    echo -en "\033[01;33m[+]\033[00m $message... "
+    echo >> $LOGFILE
+    echo -e "\033[01;33m>>> git $@\033[00m" >> $LOGFILE
+    git "$@" >> $LOGFILE 2>&1
+    if [ $? -ne 0 ]; then
+    	echo -e "\033[01;31mFAILED\033[00m" 
+    	die "$error_msg"
+    fi
+    echo -e "\033[01;32mOK\033[00m"
+}
 
 git_local_branches() { git branch --no-color | sed 's/^[* ] //'; }
 git_remote_branches() { git branch -r --no-color | sed 's/^[* ] //'; }

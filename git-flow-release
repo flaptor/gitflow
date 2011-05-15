@@ -162,37 +162,21 @@ cmd_start() {
 	require_branch_absent "$BRANCH"
 	require_tag_absent "$RELEASES_PREFIX$REL_NAME"
 	if flag fetch; then
-        echo -n "[+] Fetching $ORIGIN... "
-        git fetch -q "$ORIGIN" >> $LOGFILE 2>&1 || die "Could not fetch $PRODUCTION_BRANCH from $ORIGIN."
-        echo "OK"
-        echo -n "[+] Checking out $PRODUCTION_BRANCH... "
-        git checkout "$PRODUCTION_BRANCH" >> $LOGFILE 2>&1 || die "Unable to checkout $PRODUCTION_BRANCH"
-        echo "OK"
-        echo -n "[+] Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH... "
-        git merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH" >> $LOGFILE 2>&1 || die "Could not fast-forward $PRODUCTION_BRANCH"
-        echo "OK"
-        echo -n "[+] Checking out $DEVELOP_BRANCH... "
-        git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Unable to checkout $DEVELOP_BRANCH"
-        echo "OK"
-        echo -n "[+] Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH... "
-        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Could not fast-forwald $DEVELOP_BRANCH"
-        echo "OK"
+        flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
+        flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
+        flow_do "Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH" "" merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH"
+        flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
+        flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
 	fi
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
 
-  echo -n "[+] Creating branch $BRANCH starting at $BASE... "
-	git checkout -b "$BRANCH" "$BASE" >> $LOGFILE 2>&1 || die "Could not create feature branch '$BRANCH'"
-  echo "OK"
+    flow_do "Creating branch $BRANCH starting at $BASE" "" checkout -b "$BRANCH" "$BASE"
   
-  echo -n "[+] Merging $PRODUCTION_BRANCH into $BRANCH to enable a cleaner finish... "
-	git merge --no-ff "$PRODUCTION_BRANCH" -m "Preparing $BRANCH by merging $PRODUCTION_BRANCH into it" >> $LOGFILE 2>&1 || die "There were merge conflicts."
-  echo "OK"
+    flow_do "Merging $PRODUCTION_BRANCH into $BRANCH to enable a cleaner finish" "There were conflicts. Fix them and commit" merge --no-ff "$PRODUCTION_BRANCH" -m "Preparing $BRANCH by merging $PRODUCTION_BRANCH into it"
 
-    echo -n "[+] Updating submodules... "
-    git submodule init >> $LOGFILE 2>&1
-    git submodule update >> $LOGFILE 2>&1
-    echo "OK"
+    flow_do "Initializing submodules" "" submodule init
+    flow_do "Updating submodules" "" submodule update
 
 }
 
@@ -217,21 +201,11 @@ cmd_finish() {
 	require_branch "$BRANCH"
 	require_clean_working_tree
 	if flag fetch; then
-    echo -n "[+] Fetching $ORIGIN... "
-		git fetch -q "$ORIGIN" >> $LOGFILE 2>&1 || die "Could not fetch from $ORIGIN."
-    echo "OK"
-    echo -n "[+] Checking out $PRODUCTION_BRANCH... "
-    git checkout "$PRODUCTION_BRANCH" >> $LOGFILE 2>&1
-    echo "OK"
-    echo -n "[+] Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH... "
-    git merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH" >> $LOGFILE 2>&1
-    echo "OK"
-    echo -n "[+] Checking out $DEVELOP_BRANCH... "
-    git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1
-    echo "OK"
-    echo -n "[+] Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH... "
-    git merge --ff-only "ORIGIN/$DEVELOP_BRANCH" >> $LOGFILE 2>&1
-    echo "OK"
+        flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
+        flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
+        flow_do "Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH" "" merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH"
+	    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
+	    flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "ORIGIN/$DEVELOP_BRANCH"
 	fi
 	
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
@@ -243,7 +217,7 @@ cmd_finish() {
       echo "1) Run 'git merge $PRODUCTION_BRANCH'"
       echo "2) Test everything again (production will end up different than what you have tested)."
       echo "3) Run finish command again"
-      git checkout $BRANCH >> $LOGFILE 2>&1
+      git checkout $BRANCH > /dev/null 2>&1
       exit 1
   fi
 
@@ -252,12 +226,8 @@ cmd_finish() {
 	# in case a previous attempt to finish this release branch has failed,
 	# but the merge into production was successful, we skip it now
 	if ! git_is_branch_merged_into "$BRANCH" "$PRODUCTION_BRANCH"; then
-    echo -n "[+] Checking out $PRODUCTION_BRANCH... "
-		git checkout "$PRODUCTION_BRANCH" >> $LOGFILE 2>&1 || die "Could not check out $PRODUCTION_BRANCH."
-    echo "OK"
-    echo -n "[+] Merging $BRANCH into $PRODUCTION_BRANCH... "
- 		git merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $PRODUCTION_BRANCH" >> $LOGFILE 2>&1 || die "There were merge conflicts."
-    echo "OK"
+        flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
+	    flow_do "Merging $BRANCH into $PRODUCTION_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $PRODUCTION_BRANCH"
 	fi
 
 	if noflag notag; then
@@ -270,9 +240,7 @@ cmd_finish() {
 			flag sign && opts="$opts -s"
 			[ "$FLAGS_signingkey" != "" ] && opts="$opts -u '$FLAGS_signingkey'"
 			[ "$FLAGS_message" != "" ] && opts="$opts -m '$FLAGS_message'"
-      echo -n "[+] Tagging $tagname... "
-			git tag $opts "$tagname" >> $LOGFILE 2>&1 || die "Tagging failed. Please run finish again to retry."
-      echo "OK"
+            flow_do "Tagging $tagname" "" tag $opts "$tagname"
 		fi
 	fi
 
@@ -280,39 +248,25 @@ cmd_finish() {
 	# in case a previous attempt to finish this release branch has failed,
 	# but the merge into develop was successful, we skip it now
 	if ! git_is_branch_merged_into "$BRANCH" "$DEVELOP_BRANCH"; then
-    echo -n "[+] Checking out $DEVELOP_BRANCH... "
-		git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Could not check out $DEVELOP_BRANCH."
-    echo "OK"
-    echo -n "[+] Merging $BRANCH into $DEVELOP_BRANCH... "
-		git merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "There were merge conflicts."
-    echo "OK"
+	    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
+	    flow_do "Merging $BRANCH into $DEVELOP_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $DEVELOP_BRANCH"
 	fi
 
 	# delete branch
 	if noflag keep; then
 		if [ "$BRANCH" = "$(git_current_branch)" ]; then
-			git checkout "$PRODUCTION_BRANCH" >> $LOGFILE 2>&1
+			flow_do "Checking out $PRODUCTION_BRANCH" checkout "$PRODUCTION_BRANCH"
 		fi
-    echo -n "[+] Deleting $BRANCH... "
-		git branch -d "$BRANCH" >> $LOGFILE 2>&1
-    echo "OK"
+        flow_do "Deleting $BRANCH" "" branch -d "$BRANCH"
 	fi
 
 	if flag push; then
-    echo -n "[+] Pushing $DEVELOP_BRANCH to $ORIGIN... "
-		git push "$ORIGIN" "$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Could not push to $DEVELOP_BRANCH from $ORIGIN."
-    echo "OK"
-    echo -n "[+] Pushing $PRODUCTION_BRANCH to $ORIGIN... "
-		git push "$ORIGIN" "$PRODUCTION_BRANCH" >> $LOGFILE 2>&1 || die "Could not push to $PRODUCTION_BRANCH from $ORIGIN."
-    echo "OK"
+        flow_do "Pushing $DEVELOP_BRANCH to $ORIGIN" "" push "$ORIGIN" "$DEVELOP_BRANCH"
+        flow_do "Pushing $PRODUCTION_BRANCH to $ORIGIN" "" push "$ORIGIN" "$PRODUCTION_BRANCH"
 		if noflag notag; then
-      echo -n "[+] Pushing tog $tagname to $ORIGIN... "
-			git push "$ORIGIN" "$tagname" >> $LOGFILE 2>&1 || die "Could not push tags to $ORIGIN."
-      echo "OK"
+            flow_do "Pushing tog $tagname to $ORIGIN" "" push "$ORIGIN" "$tagname"
 		fi
-    echo -n "[+] Deleting $BRANCH at $ORIGIN... "
-		git push "$ORIGIN" ":refs/heads/$BRANCH" >> $LOGFILE 2>&1 || die "Could not delete the remote $BRANCH in $ORIGIN."
-    echo "OK"
+        flow_do "Deleting $BRANCH at $ORIGIN" "" push "$ORIGIN" ":refs/heads/$BRANCH"
 	fi
 
 }
