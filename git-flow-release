@@ -227,7 +227,7 @@ cmd_finish() {
 	# but the merge into production was successful, we skip it now
 	if ! git_is_branch_merged_into "$BRANCH" "$PRODUCTION_BRANCH"; then
         flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
-	    flow_do "Merging $BRANCH into $PRODUCTION_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $PRODUCTION_BRANCH"
+	    flow_do "Merging $BRANCH into $PRODUCTION_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff --log "$BRANCH" -m "[RELEASE $REL_NAME] -> $PRODUCTION_BRANCH"
 	fi
 
 	if noflag notag; then
@@ -249,7 +249,7 @@ cmd_finish() {
 	# but the merge into develop was successful, we skip it now
 	if ! git_is_branch_merged_into "$BRANCH" "$DEVELOP_BRANCH"; then
 	    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
-	    flow_do "Merging $BRANCH into $DEVELOP_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff "$BRANCH" -m "[RELEASE $REL_NAME] -> $DEVELOP_BRANCH"
+	    flow_do "Merging $BRANCH into $DEVELOP_BRANCH" "There were conflicts. Fix them, commit, and finish again" merge --no-ff --log "$BRANCH" -m "[RELEASE $REL_NAME] -> $DEVELOP_BRANCH"
 	fi
 
 	# delete branch
