@@ -203,35 +203,27 @@ cmd_start() {
 
 	# update the local repo with remote changes, if asked
 	if flag fetch; then
-		git fetch -q "$ORIGIN"
-        git checkout "$DEVELOP_BRANCH"
-        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" || die "could not ff $DEVELOP_BRANCH"
+        echo -n "[+] Fetching $ORIGIN... "
+    		git fetch -q "$ORIGIN" >> $LOGFILE 2>&1 || die "could not fetch $ORIGIN"
+        echo "OK"
+        echo -n "[+] Checking out $DEVELOP_BRANCH... "
+        git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1
+        echo "OK"
+        echo -n "[+] Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH... "
+        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "could not ff $DEVELOP_BRANCH"
+        echo "OK"
 	fi
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
-	# create branch
-	if ! git checkout -b "$BRANCH" "$BASE"; then
-		die "Could not create feature branch '$BRANCH'"
-	fi
+  echo -n "[+] Cretaing branch $BRANCH starting at $BASE... "
+	git checkout -b "$BRANCH" "$BASE" >> $LOGFILE 2>&1 || die "Could not create feature branch '$BRANCH'"
+  echo "OK"
 
-    git submodule init
-    git submodule update
+    echo -n "[+] Updating submodules... "
+    git submodule init || die "Failed to init submodules" >> $LOGFILE 2>&1
+    git submodule update || die "Failed to update submodules" >> $LOGFILE 2>&1
+    echo "OK"
 
-	echo
-	echo "Summary of actions:"
-    if flag fetch; then
-        echo "- Updates were fetched form remote repo before starting"
-    else
-        echo "- Updates were NOT fetched from remote repo. Your may have merge problems afterwards"
-    fi
-	echo "- A new branch '$BRANCH' was created, based on '$BASE'"
-	echo "- Submodules were inited and updated"
-	echo "- You are now on branch '$BRANCH'"
-	echo ""
-	echo "Now, start committing on your feature. When done, use:"
-	echo ""
-	echo "     git flow feature finish $NAME"
-	echo
 }
 
 cmd_finish() {
@@ -290,9 +282,15 @@ cmd_finish() {
 
 	# update local repo with remote changes first, if asked
     if flag fetch; then
-        git fetch -q "$ORIGIN"
-        git checkout "$DEVELOP_BRANCH"
-        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+        echo -n "[+] Fetching $ORIGIN... "
+        git fetch -q "$ORIGIN" >> $LOGFILE 2>&1 || die "Unable to fetch $ORIGIN"
+        echo "OK"
+        echo -n "[+] Checking out $DEVELOP_BRANCH... "
+        git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Could not check out $DEVELOP_BRANCH."
+        echo "OK"
+        echo -n "[+] Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH... "
+        git merge --ff-only "$ORIGIN/$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Unable to ff $DEVELOP_BRANCH"
+        echo "OK"
     fi
 
 	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then
@@ -311,29 +309,31 @@ cmd_finish() {
 		fi
 	fi
 
-	# merge into BASE
-	git checkout "$DEVELOP_BRANCH"
-	if [ "$(git rev-list -n2 "$DEVELOP_BRANCH..$BRANCH" | wc -l)" -eq 1 ]; then
-		git merge --ff "$BRANCH"
-	else
-		git merge --no-ff "$BRANCH"
-	fi
+    if ! git_is_branch_merged_into "$BRANCH" "$DEVELOP_BRANCH"; then
+      	# merge into BASE
+        echo -n "[+] Checking out $DEVELOP_BRANCH... "
+      	git checkout "$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Could not check out $DEVELOP_BRANCH."
+        echo "OK"
+        echo -n "[+] Merging $BRANCH into $DEVELOP_BRANCH... "
+        git merge --no-ff --log "$BRANCH" -m "[FEATURE $NAME] -> $DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "There were merge conflicts." 
+        echo "OK"
+      	if [ $? -ne 0 ]; then
+      		# oops.. we have a merge conflict!
+      		# write the given $DEVELOP_BRANCH to a temporary file (we need it later)
+      		mkdir -p "$DOT_GIT_DIR/.gitflow"
+      		echo "$DEVELOP_BRANCH" > "$DOT_GIT_DIR/.gitflow/MERGE_BASE"
+      		echo
+      		echo "There were merge conflicts. To resolve the merge conflict manually, use:"
+      		echo "    git mergetool"
+      		echo "    git commit"
+      		echo 
+      		echo "You can then complete the finish by running it again:"
+      		echo "    git flow feature finish $NAME"
+      		echo
+      		exit 1
+      	fi
+    fi
 
-	if [ $? -ne 0 ]; then
-		# oops.. we have a merge conflict!
-		# write the given $DEVELOP_BRANCH to a temporary file (we need it later)
-		mkdir -p "$DOT_GIT_DIR/.gitflow"
-		echo "$DEVELOP_BRANCH" > "$DOT_GIT_DIR/.gitflow/MERGE_BASE"
-		echo
-		echo "There were merge conflicts. To resolve the merge conflict manually, use:"
-		echo "    git mergetool"
-		echo "    git commit"
-		echo 
-		echo "You can then complete the finish by running it again:"
-		echo "    git flow feature finish $NAME"
-		echo
-		exit 1
-	fi
 
 	# when no merge conflict is detected, just clean up the feature branch
 	helper_finish_cleanup
@@ -346,36 +346,25 @@ helper_finish_cleanup() {
 
 	# delete branch
 	if flag fetch; then
-		git push "$ORIGIN" ":refs/heads/$BRANCH"
+    echo -n "[+] Deleting $BRANCH at $ORIGIN... "
+		git push "$ORIGIN" ":refs/heads/$BRANCH" >> $LOGFILE 2>&1 || die "Unable to delete $BRANCH at $ORIGIN"
+    echo "OK"
 	fi
 	
 	
 	if noflag keep; then
-		git branch -d "$BRANCH"
+    echo -n "[+] Deleting $BRANCH... "
+		git branch -d "$BRANCH" >> $LOGFILE 2>&1 || die "Unable to delete $BRANCH"
+    echo "OK"
 	fi
 
     # upload to remote repo
     if flag upload; then
-        git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
-        echo git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH"
+        echo -n "[+] Pushing $DEVELOP_BRANCH to $ORIGIN... "
+        git push "$ORIGIN" "$DEVELOP_BRANCH:$DEVELOP_BRANCH" >> $LOGFILE 2>&1 || die "Unable to push $DEVELOP_BRANCH"
+        echo "OK"
     fi
 
-	echo
-	echo "Summary of actions:"
-	echo "- The feature branch '$BRANCH' was merged into '$DEVELOP_BRANCH'"
-	#echo "- Merge conflicts were resolved"		# TODO: Add this line when it's supported
-	if flag keep; then
-		echo "- Feature branch '$BRANCH' is still available"
-	else
-		echo "- Feature branch '$BRANCH' has been removed"
-	fi
-    if flag upload; then
-        echo "- Changes to master have been uploaded to remote repository."
-    else
-        echo "- All changes were perfomed locally. Remember to upload to the remote repository manually."
-    fi
-	echo "- You are now on branch '$DEVELOP_BRANCH'"
-	echo
 }
 
 cmd_publish() {
