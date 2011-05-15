@@ -54,6 +54,7 @@ usage() {
 	echo "   hotfix    Manage your hotfix branches."
 	echo "   support   Manage your support branches."
 	echo "   version   Shows version information."
+	echo "   log       Shows log for last flow command."
 	echo
 	echo "Try 'git flow <subcommand> help' for details."
 }
