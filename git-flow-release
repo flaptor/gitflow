@@ -205,7 +205,7 @@ cmd_finish() {
         flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
         flow_do "Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH" "" merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH"
 	    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
-	    flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "ORIGIN/$DEVELOP_BRANCH"
+	    flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
 	fi
 	
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
