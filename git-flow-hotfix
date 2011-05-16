@@ -158,7 +158,7 @@ cmd_start() {
 	BASE=${2:-$PRODUCTION_BRANCH}
 	require_version_arg
 	require_base_is_on_master
-	require_no_existing_hotfix_branches
+	#require_no_existing_hotfix_branches
 
 	# sanity checks
 	require_clean_working_tree
