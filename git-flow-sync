@@ -93,7 +93,7 @@ sync_branch_down() {
     	    start_msg_warn "  remote"
         fi
 
-	    end_msg "$local_branch ($rauthor)";
+	    end_msg "$1 ($rauthor)";
     fi
 }
 
