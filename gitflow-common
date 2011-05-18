@@ -71,19 +71,54 @@ noflag() { local FLAG; eval FLAG='$FLAGS_'$1; [ $FLAG -ne $FLAGS_TRUE ]; }
 # Git specific common functionality
 #
 
+start_msg() {
+    echo -en "\033[01;33m[+]\033[00m $1... "
+}
+end_msg_success() {
+    echo -e "\033[01;32m$1\033[00m"
+}
+end_msg_warn() {
+	echo -e "\033[01;33m$1\033[00m" 
+}
+end_msg_failure() {
+	echo -e "\033[01;31m$1\033[00m" 
+}
+start_msg_success() {
+    echo -en "\033[01;33m[+]\033[00m \033[01;32m$1\033[00m "
+}
+start_msg_warn() {
+    echo -en "\033[01;33m[+]\033[00m \033[01;33m$1\033[00m "
+}
+start_msg_failure() {
+    echo -en "\033[01;33m[+]\033[00m \033[01;31m$1\033[00m "
+}
+start_msg_info() {
+    echo -en "\033[01;33m[+]\033[00m \033[01;34m$1\033[00m "
+}
+end_msg() {
+	echo -e "$1" 
+}
+
+silent_do() {
+	git "$@" > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+	    start_msg_failure "Failed to execute git $@"
+    	die "Aborted"
+    fi
+}
 flow_do() {
 	local message="$1"
 	local error_msg="$2"
 	shift 2
-    echo -en "\033[01;33m[+]\033[00m $message... "
+	start_msg "$message"
     echo >> $LOGFILE
     echo -e "\033[01;33m>>> git $@\033[00m" >> $LOGFILE
     git "$@" >> $LOGFILE 2>&1
     if [ $? -ne 0 ]; then
-    	echo -e "\033[01;31mFAILED\033[00m" 
+	    end_msg_failure "FAILED"
     	die "$error_msg"
     fi
-    echo -e "\033[01;32mOK\033[00m"
+    end_msg_success "OK"
 }
 
 git_local_branches() { git branch --no-color | sed 's/^[* ] //'; }
@@ -93,6 +128,10 @@ git_all_tags() { git tag; }
 
 git_current_branch() {
 	git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed 's/^* //g'
+}
+
+git_author() {
+	git log --format=format:%an -1 "$1" 
 }
 
 git_is_clean_working_tree() {
