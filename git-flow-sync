@@ -59,13 +59,13 @@ sync_branch() {
 	        end_msg "$1 ($author <-> $rauthor) $commit..$rcommit";
 	    fi
 	    if [ $status -eq 1 ]; then
-	    	start_msg_success "    pull"
+	    	start_msg_success " pull <-"
 	        end_msg "$1 ($author <- $rauthor) $commit..$rcommit";
 	        silent_do checkout "$1"
 	        silent_do merge --ff-only "$ORIGIN/$1"
 	    fi
 	    if [ $status -eq 2 ]; then
-	      start_msg_success "    push"
+	      start_msg_success " -> push"
 	      end_msg "$1 ($author -> $rauthor) $rcommit..$commit";
 	      silent_do push "$ORIGIN" "$1"
 	    fi
@@ -100,7 +100,8 @@ sync_branch_down() {
 cmd_default() {
     require_clean_working_tree
     
-    local current=git_current_branch
+    local current=$(git_current_branch)
+    echo $current
     
     flow_do "Fetching $ORIGIN" "" fetch --prune -q "$ORIGIN"
     flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix)/")
