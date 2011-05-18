@@ -260,6 +260,7 @@ cmd_finish() {
 	    if noflag notag; then
 	        flow_do "Pushing tog $tagname to $ORIGIN" "" push "$ORIGIN" "$tagname"
 		fi
+        flow_do "Deleting $BRANCH at $ORIGIN" "" push "$ORIGIN" ":refs/heads/$BRANCH"
 	fi
 
 }
