@@ -1,0 +1,120 @@
+#!/bin/bash
+#
+#
+# git-flow -- A collection of Git extensions to provide high-level
+# repository operations for Vincent Driessen's branching model.
+#
+# Original blog post presenting this model is found at:
+#    http://nvie.com/git-model
+#
+# Feel free to contribute to this project at:
+#    http://github.com/nvie/gitflow
+#
+# Copyright 2010 Vincent Driessen. All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+#    1. Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+# 
+#    2. Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY VINCENT DRIESSEN ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL VINCENT DRIESSEN OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Vincent Driessen.
+#
+
+require_git_repo
+require_gitflow_initialized
+gitflow_load_settings
+
+sync_branch() {
+    local author=$(git_author "$1")
+    local commit=$(git rev-parse --short "$1")
+    if has "$ORIGIN/$1" $(git_all_branches); then
+	    git_compare_branches "$1" "$ORIGIN/$1"
+	    local status=$?
+	    local rauthor=$(git_author "$ORIGIN/$1")
+	    local rcommit=$(git rev-parse --short "$ORIGIN/$1")
+	    if [ $status -eq 0 ]; then
+	    	start_msg_info "  synced"
+	        end_msg "$1 ($author)";
+	    fi
+	    if [ $status -gt 2 ]; then
+	    	start_msg_failure "diverged"
+	        end_msg "$1 ($author <-> $rauthor) $commit..$rcommit";
+	    fi
+	    if [ $status -eq 1 ]; then
+	    	start_msg_success " pull <-"
+	        end_msg "$1 ($author <- $rauthor) $commit..$rcommit";
+	        silent_do checkout "$1"
+	        silent_do merge --ff-only "$ORIGIN/$1"
+	    fi
+	    if [ $status -eq 2 ]; then
+	      start_msg_success " -> push"
+	      end_msg "$1 ($author -> $rauthor) $rcommit..$commit";
+	      silent_do push "$ORIGIN" "$1"
+	    fi
+    else
+        if git_is_branch_merged_into "$1" "$PRODUCTION_BRANCH"; then
+            start_msg_failure "   @prod"
+        elif git_is_branch_merged_into "$1" "$DEVELOP_BRANCH"; then
+            start_msg_failure " @master"
+        else
+            start_msg_warn "   local"
+        fi
+        end_msg "$1";
+    fi
+}
+
+sync_branch_down() {
+	local local_branch=`echo "$1" | cut -d "/" -f 2-`
+    local rauthor=$(git_author "$1")
+    if ! has "$local_branch" $(git_all_branches); then
+        if git_is_branch_merged_into "$1" "$PRODUCTION_BRANCH"; then
+            start_msg_failure "   @prod"
+        elif git_is_branch_merged_into "$1" "$DEVELOP_BRANCH"; then
+            start_msg_failure " @master"
+        else
+    	    start_msg_warn "  remote"
+        fi
+
+	    end_msg "$local_branch ($rauthor)";
+    fi
+}
+
+cmd_default() {
+    require_clean_working_tree
+    
+    local current=$(git_current_branch)
+    echo $current
+    
+    flow_do "Fetching $ORIGIN" "" fetch --prune -q "$ORIGIN"
+    flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix)/")
+    sync_branch "$DEVELOP_BRANCH"
+    sync_branch "$PRODUCTION_BRANCH"
+    for branch in $flow_branches; do
+      sync_branch "$branch"
+    done
+    remote_flow_branches=$(echo "$(git_remote_branches)" | egrep "^$ORIGIN/(feature|release|hotfix)/")
+    for branch in $remote_flow_branches; do
+    	sync_branch_down $branch
+    done
+    
+    git checkout "$current" > /dev/null 2>&1
+}
+
