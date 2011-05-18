@@ -100,11 +100,12 @@ end_msg() {
 }
 
 silent_do() {
-	git "$@" > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-	    start_msg_failure "Failed to execute git $@"
-    	die "Aborted"
-    fi
+  echo -e "\033[01;33m>>> git $@\033[00m" >> $LOGFILE
+  git "$@" >> $LOGFILE 2>&1
+  if [ $? -ne 0 ]; then
+    start_msg_failure "Failed to execute git $@"
+  	die "Aborted"
+  fi
 }
 flow_do() {
 	local message="$1"
