@@ -65,11 +65,19 @@ sync_branch() {
 	        silent_do merge --ff-only "$ORIGIN/$1"
 	    fi
 	    if [ $status -eq 2 ]; then
-	      flow_do "Pushing (fast-forward) $1 to $ORIGIN $commit..$rcommit" "" push "$ORIGIN" "$1"
+	      start_msg_success "    push"
+	      end_msg "$1 ($author -> $rauthor) $rcommit..$commit";
+	      silent_do push "$ORIGIN" "$1"
 	    fi
     else
-    	start_msg_warn "   local"
-	    end_msg "$1";
+        if git_is_branch_merged_into "$1" "$PRODUCTION_BRANCH"; then
+            start_msg_failure "   @prod"
+        elif git_is_branch_merged_into "$1" "$DEVELOP_BRANCH"; then
+            start_msg_failure " @master"
+        else
+            start_msg_warn "   local"
+        fi
+        end_msg "$1";
     fi
 }
 
@@ -77,7 +85,14 @@ sync_branch_down() {
 	local local_branch=`echo "$1" | cut -d "/" -f 2-`
     local rauthor=$(git_author "$1")
     if ! has "$local_branch" $(git_all_branches); then
-    	start_msg_warn "  remote"
+        if git_is_branch_merged_into "$1" "$PRODUCTION_BRANCH"; then
+            start_msg_failure "   @prod"
+        elif git_is_branch_merged_into "$1" "$DEVELOP_BRANCH"; then
+            start_msg_failure " @master"
+        else
+    	    start_msg_warn "  remote"
+        fi
+
 	    end_msg "$local_branch ($rauthor)";
     fi
 }
@@ -87,7 +102,7 @@ cmd_default() {
     
     local current=git_current_branch
     
-    flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
+    flow_do "Fetching $ORIGIN" "" fetch --prune -q "$ORIGIN"
     flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix)/")
     sync_branch "$DEVELOP_BRANCH"
     sync_branch "$PRODUCTION_BRANCH"
