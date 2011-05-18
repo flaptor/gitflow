@@ -101,7 +101,6 @@ cmd_default() {
     require_clean_working_tree
     
     local current=$(git_current_branch)
-    echo $current
     
     flow_do "Fetching $ORIGIN" "" fetch --prune -q "$ORIGIN"
     flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix)/")
