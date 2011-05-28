@@ -206,8 +206,7 @@ cmd_start() {
 	# update the local repo with remote changes, if asked
 	if flag fetch; then
 	    flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-	    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
-        flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+        sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
 	fi
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
@@ -274,8 +273,7 @@ cmd_finish() {
 	# update local repo with remote changes first, if asked
     if flag fetch; then
     	flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-        flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
-        flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+        sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
     fi
 
 	if has "$ORIGIN/$BRANCH" "$(git_remote_branches)"; then

@@ -166,8 +166,7 @@ cmd_start() {
 	require_tag_absent "$VERSION_PREFIX$VERSION"
 	if flag fetch; then
         flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-        flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
-        flow_do "Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH" "" merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH"
+        sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
 	fi
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
 
@@ -200,10 +199,8 @@ cmd_finish() {
 	require_clean_working_tree
 	if flag fetch; then
       flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-      flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
-      flow_do "Fast-forward $PRODUCTION_BRANCH to $ORIGIN/$PRODUCTION_BRANCH" "" merge --ff-only "$ORIGIN/$PRODUCTION_BRANCH"
-      flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
-      flow_do "Fast-forward $DEVELOP_BRANCH to $ORIGIN/$DEVELOP_BRANCH" "" merge --ff-only "$ORIGIN/$DEVELOP_BRANCH"
+      sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
+      sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
 	fi
 
   if ! git_is_branch_merged_into "$PRODUCTION_BRANCH" "$BRANCH"; then
