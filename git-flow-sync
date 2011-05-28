@@ -62,8 +62,8 @@ cmd_default() {
   
       echo
       echo "=== TRACKING BRANCHES ==="
-      sync_branch "$DEVELOP_BRANCH"
-      sync_branch "$PRODUCTION_BRANCH"
+      sync_branch "$DEVELOP_BRANCH" "nopush"
+      sync_branch "$PRODUCTION_BRANCH" "nopush"
       for branch in $flow_branches; do
         sync_branch "$branch" "listfirst"
       done
