@@ -51,7 +51,27 @@ usage() {
 }
 
 cmd_default() {
-	cmd_list "$@"
+	cmd_info "$@"
+}
+
+cmd_info() {
+  	local current_branch
+    current_branch=$(git branch --no-color | grep '^\* ' | grep -v 'no branch' | sed 's/^* //g' | grep "^$PREFIX")
+    echo
+    echo -e "  \033[01;32mCHANGES THAT WOULD BE RELEASED\033[00m"
+    echo  
+    git log --reverse --first-parent --pretty=format:"    %C(blue)\__ %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "production..master"
+    if [ -z "$current_branch" ]; then
+        echo
+        echo -e "  \033[01;33mhttps://github.com/flaptor/indextank/compare/production...master\033[00m"  
+    else
+        echo
+        echo -e "  \033[01;32mADDITIONAL CHANGES on $current_branch\033[00m"
+        echo
+        git log --reverse --no-merges --pretty=format:"    %C(blue)\__ %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "master..$current_branch"
+        echo
+        echo -e "  \033[01;33mhttps://github.com/flaptor/indextank/compare/production...$current_branch\033[00m"  
+    fi
 }
 
 cmd_list() {
