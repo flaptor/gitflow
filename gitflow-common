@@ -406,7 +406,7 @@ sync_branch() {
             silent_do merge --ff-only "$ORIGIN/$1"
         fi
         if [ $status -eq 2 ]; then
-        	if [ "$1" -eq "nopush" ]; then
+        	if [ "$2" = "nopush" ]; then
 	            start_msg_failure "     <changed>   "
 	            end_msg "$BR  $author -> $rauthor  \033[01;31m$rcommit..$commit\033[00m";
 	            list_changes_up "$ORIGIN/$1" "$1"
