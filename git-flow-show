@@ -44,7 +44,7 @@ gitflow_load_settings
 
 cmd_default() {
   echo
-  git show  --pretty=format:" %C(blue)%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1"
+  git show -s --pretty=format:" %C(blue)%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1"
   git log --no-merges --reverse --pretty=format:"    %C(blue)\__ %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1^..$1^2"
   echo
   echo -e "  \033[01;33mhttps://github.com/flaptor/indextank/compare/$1^...$1^2\033[00m"
