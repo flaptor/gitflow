@@ -45,7 +45,6 @@ gitflow_load_settings
 cmd_default() {
     require_clean_working_tree
     
-    
     local current=$(git_current_branch)
     
     flow_do "Fetching $ORIGIN" "" fetch --prune -q "$ORIGIN"
@@ -62,8 +61,8 @@ cmd_default() {
   
       echo
       echo "=== TRACKING BRANCHES ==="
-      sync_branch "$DEVELOP_BRANCH" "nopush"
-      sync_branch "$PRODUCTION_BRANCH" "nopush"
+      sync_branch "$DEVELOP_BRANCH" "nopush" "--first-parent"
+      sync_branch "$PRODUCTION_BRANCH" "nopush" "--first-parent"
       for branch in $flow_branches; do
         sync_branch "$branch" "listfirst"
       done
