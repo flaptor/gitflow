@@ -30,6 +30,7 @@ prefix=/usr/local
 
 # files that need mode 755
 EXEC_FILES=git-flow
+AUTOCOMPLETE=git-flow-completion.bash
 
 # files that need mode 644
 SCRIPT_FILES =git-flow-init
@@ -54,6 +55,9 @@ install:
 	install -d -m 0755 $(prefix)/bin
 	install -m 0755 $(EXEC_FILES) $(prefix)/bin
 	install -m 0644 $(SCRIPT_FILES) $(prefix)/bin
+	if [ -d "/etc/bash_completion.d" ]; then install -m 0755 $(AUTOCOMPLETE) /etc/bash_completion.d; fi  
+	if [ -d "/usr/local/etc/bash_completion.d" ]; then install -m 0755 $(AUTOCOMPLETE) /usr/local/etc/bash_completion.d; fi
+	if [ -d "/opt/local/etc/bash_completion.d" ]; then install -m 0755 $(AUTOCOMPLETE) /opt/local/etc/bash_completion.d; fi
 
 uninstall:
 	test -d $(prefix)/bin && \
