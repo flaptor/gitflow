@@ -439,7 +439,7 @@ local_only_branch() {
               end_msg "$BR  $author -> new  \033[01;31m$commit\033[00m";
               silent_do push "$ORIGIN" "$1"            
             else
-              start_msg_success    "  <still opened> "
+              start_msg_success    "   <still open>  "
             fi
         fi
         end_msg "$BR";
@@ -462,7 +462,7 @@ sync_branch_down() {
               silent_do checkout -b "$local_branch" "$1"
               return            
             else
-              start_msg_success    "  <still opened> "
+              start_msg_success    "   <still open>  "
             fi
         fi
         end_msg "\033[01;34m$local_branch\033[00m  $rauthor";
