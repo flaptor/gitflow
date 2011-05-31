@@ -35,6 +35,7 @@ AUTOCOMPLETE=git-flow-completion.bash
 # files that need mode 644
 SCRIPT_FILES =git-flow-init
 SCRIPT_FILES+=git-flow-feature
+SCRIPT_FILES+=git-flow-files
 SCRIPT_FILES+=git-flow-hotfix
 SCRIPT_FILES+=git-flow-change
 SCRIPT_FILES+=git-flow-release
