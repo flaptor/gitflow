@@ -57,7 +57,7 @@ cmd_default() {
         sync_branch_down "$ORIGIN/$1" "force"
       fi
     else
-      flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix)/")
+      flow_branches=$(echo "$(git_local_branches)" | egrep "^(feature|release|hotfix|change)/")
   
       echo
       echo "=== TRACKING BRANCHES ==="
@@ -75,7 +75,7 @@ cmd_default() {
       
       echo
       echo "=== REMOTE ONLY BRANCHES ==="
-      remote_flow_branches=$(echo "$(git_remote_branches)" | egrep "^$ORIGIN/(feature|release|hotfix)/")
+      remote_flow_branches=$(echo "$(git_remote_branches)" | egrep "^$ORIGIN/(feature|release|hotfix|change)/")
       for branch in $remote_flow_branches; do
       	sync_branch_down $branch
       done
