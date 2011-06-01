@@ -158,7 +158,7 @@ cmd_start() {
 	require_tag_absent "$VERSION_PREFIX$VERSION"
 	if flag fetch; then
         flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-        sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
+        sync_branch "$PRODUCTION_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize production" 
 	fi
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
 
@@ -191,8 +191,8 @@ cmd_production() {
 	require_clean_working_tree
 	if flag fetch; then
       flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-      sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
-      sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
+      sync_branch "$PRODUCTION_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize production" 
+      sync_branch "$DEVELOP_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize master" 
 	fi
 
   if ! git_is_branch_merged_into "$PRODUCTION_BRANCH" "$BRANCH"; then
@@ -275,7 +275,7 @@ cmd_master() {
 	require_clean_working_tree
 	if flag fetch; then
       flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-      sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
+      sync_branch "$DEVELOP_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize master" 
 	fi
 
 	# try to merge into master

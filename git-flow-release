@@ -183,8 +183,8 @@ cmd_start() {
 	require_tag_absent "$RELEASES_PREFIX$REL_NAME"
 	if flag fetch; then
         flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-        sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
-        sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
+        sync_branch "$PRODUCTION_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize production" 
+        sync_branch "$DEVELOP_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize master" 
 	fi
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
@@ -220,8 +220,8 @@ cmd_finish() {
 	require_clean_working_tree
 	if flag fetch; then
         flow_do "Fetching $ORIGIN" "" fetch -q "$ORIGIN"
-        sync_branch "$PRODUCTION_BRANCH" "nopush" || die "Unable to synchronize production" 
-        sync_branch "$DEVELOP_BRANCH" "nopush" || die "Unable to synchronize master" 
+        sync_branch "$PRODUCTION_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize production" 
+        sync_branch "$DEVELOP_BRANCH" "nopush" "--first-parent" || die "Unable to synchronize master" 
 	fi
 	
     require_branches_equal "$PRODUCTION_BRANCH" "$ORIGIN/$PRODUCTION_BRANCH"
