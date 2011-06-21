@@ -101,7 +101,7 @@ end_msg() {
 
 silent_do() {
   echo -e "\033[01;33m>>> git $@\033[00m" >> $LOGFILE
-  git "$@" >> $LOGFILE 2>&1
+  git --no-pager "$@" >> $LOGFILE 2>&1
   if [ $? -ne 0 ]; then
     start_msg_failure "Failed to execute git $@"
   	die "Aborted"
@@ -113,7 +113,7 @@ flow_do() {
 	shift 2
 	start_msg "$message"
     echo >> $LOGFILE
-    echo -e "\033[01;33m>>> git $@\033[00m" >> $LOGFILE
+    echo -e "\033[01;33m>>> git --no-pager $@\033[00m" >> $LOGFILE
     git "$@" >> $LOGFILE 2>&1
     if [ $? -ne 0 ]; then
 	    end_msg_failure "FAILED"
@@ -370,10 +370,10 @@ require_branches_equal() {
 }
 
 list_changes() {
-  git log --reverse $3 --pretty=format:"                        %C(blue)\__ <- %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1..$2"
+  git --no-pager log --reverse $3 --pretty=format:"                        %C(blue)\__ <- %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1..$2"
 }
 list_changes_up() {
-  git log --reverse $3 --pretty=format:"                        %C(red)\__ -> %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1..$2"
+  git --no-pager log --reverse $3 --pretty=format:"                        %C(red)\__ -> %Creset%s  %C(cyan)%an%Creset %cr %Cred%h%Creset" "$1..$2"
 }
 
 sync_branch() {
@@ -407,11 +407,10 @@ sync_branch() {
         fi
         if [ $status -eq 2 ]; then
         	if [ "$2" = "nopush" ]; then
-	            start_msg_failure "     <changed>   "
+	            start_msg_success " <local changes> "
 	            end_msg "$BR  $author -> $rauthor  \033[01;31m$rcommit..$commit\033[00m";
 	            list_changes_up "$ORIGIN/$1" "$1" "$3"
 	            echo
-	            return 1
         	else
 	            start_msg_warn "    pushing ->   "
 	            end_msg "$BR  $author -> $rauthor  \033[01;31m$rcommit..$commit\033[00m";
