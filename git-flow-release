@@ -228,13 +228,21 @@ cmd_finish() {
     require_branches_equal "$DEVELOP_BRANCH" "$ORIGIN/$DEVELOP_BRANCH"
 
   if ! git_is_branch_merged_into "$PRODUCTION_BRANCH" "$BRANCH"; then
-      echo "Cannot finish. $PRODUCTION_BRANCH is not an ancestor of $BRANCH."
-      echo "This probably means a HOTFIX or RELEASE was finished after you started $BRANCH."
-      echo "1) Run 'git merge $PRODUCTION_BRANCH'"
-      echo "2) Test everything again (production will end up different than what you have tested)."
-      echo "3) Run finish command again"
-      git checkout $BRANCH > /dev/null 2>&1
-      exit 1
+      if ! git_is_branch_merged_into "$BRANCH" "$PRODUCTION_BRANCH"; then
+        echo
+        echo "Cannot finish. $PRODUCTION_BRANCH is not an ancestor of $BRANCH."
+        echo "This probably means a HOTFIX or RELEASE was finished after you started $BRANCH."  
+        echo "1) Run 'git merge $PRODUCTION_BRANCH'"
+        echo "2) Test everything again (production will end up different than what you have tested)."
+        echo "3) Run finish command again"
+        echo
+        git checkout $BRANCH > /dev/null 2>&1
+        exit 1
+      else
+        echo
+        echo "It appears that $BRANCH has already been merged into $PRODUCTION_BRANCH, you're probably retrying a finish after fixing conflicts."
+        echo
+      fi
   fi
 
 
