@@ -281,7 +281,7 @@ cmd_finish() {
 		if [ "$BRANCH" = "$(git_current_branch)" ]; then
 			flow_do "Checking out $PRODUCTION_BRANCH" checkout "$PRODUCTION_BRANCH"
 		fi
-        flow_do "Deleting $BRANCH" "" branch -d "$BRANCH"
+        flow_do "Deleting $BRANCH" "" branch -D "$BRANCH"
 	fi
 
 	if flag push; then

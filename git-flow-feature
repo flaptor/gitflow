@@ -330,7 +330,7 @@ helper_finish_cleanup() {
 	
 	
 	if noflag keep; then
-        flow_do "Deleting $BRANCH" "" branch -d "$BRANCH"
+        flow_do "Deleting $BRANCH" "" branch -D "$BRANCH"
 	fi
 
     # upload to remote repo

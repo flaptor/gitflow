@@ -248,7 +248,7 @@ cmd_production() {
 	    if [ "$BRANCH" = "$(git_current_branch)" ]; then
 	      flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
 	    fi
-	    flow_do "Deleting $BRANCH" "" branch -d "$BRANCH"
+	    flow_do "Deleting $BRANCH" "" branch -D "$BRANCH"
 	fi
 
 	if flag push; then
@@ -299,7 +299,7 @@ cmd_master() {
 	    if [ "$BRANCH" = "$(git_current_branch)" ]; then
 	      flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
 	    fi
-	    flow_do "Deleting $BRANCH" "" branch -d "$BRANCH"
+	    flow_do "Deleting $BRANCH" "" branch -D "$BRANCH"
 	fi
 
 	if flag push; then
