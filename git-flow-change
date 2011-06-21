@@ -260,6 +260,8 @@ cmd_production() {
         flow_do "Deleting $BRANCH at $ORIGIN" "" push "$ORIGIN" ":refs/heads/$BRANCH"
 	fi
 
+    flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
+
 }
 
 cmd_master() {
@@ -307,4 +309,5 @@ cmd_master() {
       flow_do "Deleting $BRANCH at $ORIGIN" "" push "$ORIGIN" ":refs/heads/$BRANCH"
 	fi
 
+    flow_do "Checking out $DEVELOP_BRANCH" "" checkout "$DEVELOP_BRANCH"
 }

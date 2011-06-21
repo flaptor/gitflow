@@ -268,4 +268,6 @@ cmd_finish() {
         flow_do "Deleting $BRANCH at $ORIGIN" "" push "$ORIGIN" ":refs/heads/$BRANCH"
 	fi
 
+    flow_do "Checking out $PRODUCTION_BRANCH" "" checkout "$PRODUCTION_BRANCH"
+
 }
